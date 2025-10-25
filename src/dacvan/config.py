@@ -1,42 +1,116 @@
+# src/dacvan/config.py
 import os
+import json
 import logging
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class Config:
     def __init__(self):
-        # Paths
-        self.atomic_red_team_path = os.path.expanduser("~/AtomicRedTeam")
-        self.sysmon_config_path = "/etc/sysmon/config.xml"  # For Sysmon on Ubuntu VM
+        # Set attributes directly in __init__
+        self._debug = os.getenv("DEBUG", "false").lower() == "true"
+        config_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "config.json")
+        self._config = self._load_config(config_path)
 
-        # Elastic settings (kept for potential hybrid testing or reversion)
-        self.elastic_url = os.getenv('ELASTIC_URL', "http://localhost:9200")
-        self.elastic_user = os.getenv('ELASTIC_USER', "elastic")
-        self.elastic_pass = os.getenv('ELASTIC_PASS', "")
+    def _load_config(self, config_path):
+        try:
+            with open(config_path, "r") as f:
+                config = json.load(f)
+                logging.info(f"Loaded config from {config_path}")
+                return config
+        except FileNotFoundError:
+            logging.error(f"{config_path} not found")
+            return {
+                "grok_api_key": os.getenv("GROK_API_KEY", ""),
+                "debug": os.getenv("DEBUG", "false").lower() == "true",
+                "api_timeout_secs": os.getenv("API_TIMEOUT_SECS", 30),
+                "atomic_red_team_path": os.getenv("ATOMIC_RED_TEAM_PATH", "/path/to/atomic-red-team"),
+                "splunk_host": os.getenv("SPLUNK_HOST", "[splunkhost]"),
+                "splunk_port": os.getenv("SPLUNK_PORT", 8089),
+                "splunk_user": os.getenv("SPLUNK_USER", "admin"),
+                "splunk_pass": os.getenv("SPLUNK_PASS", "your_password"),
+                "elastic_url": os.getenv("ELASTIC_URL", "http://[elasticip]:9200"),
+                "elastic_user": os.getenv("ELASTIC_USER", "elastic"),
+                "elastic_pass": os.getenv("ELASTIC_PASS", "your_password"),
+                "siem_platform": os.getenv("SIEM_PLATFORM", "splunk"),
+                "index_names": {"elasticsearch": "sysmon-*", "splunk": "linux:process"},
+                "field_mappings": {"process.name": "process.name", "command_line": "command_line"},
+                "pipeline_context": {"ci_cd": "GitHub Actions runner", "runner_details": "self-hosted on Ubuntu VM"}
+            }
+        except json.JSONDecodeError as e:
+            logging.error(f"Invalid {config_path}: {e}")
+            return {
+                "grok_api_key": os.getenv("GROK_API_KEY", ""),
+                "debug": os.getenv("DEBUG", "false").lower() == "true",
+                "api_timeout_secs": os.getenv("API_TIMEOUT_SECS", 30),
+                "atomic_red_team_path": os.getenv("ATOMIC_RED_TEAM_PATH", "/path/to/atomic-red-team"),
+                "splunk_host": os.getenv("SPLUNK_HOST", "[splunkhost]"),
+                "splunk_port": os.getenv("SPLUNK_PORT", 8089),
+                "splunk_user": os.getenv("SPLUNK_USER", "admin"),
+                "splunk_pass": os.getenv("SPLUNK_PASS", "your_password"),
+                "elastic_url": os.getenv("ELASTIC_URL", "http://[elasticip]:9200"),
+                "elastic_user": os.getenv("ELASTIC_USER", "elastic"),
+                "elastic_pass": os.getenv("ELASTIC_PASS", "your_password"),
+                "siem_platform": os.getenv("SIEM_PLATFORM", "splunk"),
+                "index_names": {"elasticsearch": "sysmon-*", "splunk": "linux:process"},
+                "field_mappings": {"process.name": "process.name", "command_line": "command_line"},
+                "pipeline_context": {"ci_cd": "GitHub Actions runner", "runner_details": "self-hosted on Ubuntu VM"}
+            }
 
-        # Splunk settings (primary for current setup)
-        self.splunk_host = os.getenv("SPLUNK_HOST", "192.168.182.1")
-        self.splunk_port = os.getenv("SPLUNK_PORT", "8089")
-        self.splunk_user = os.getenv("SPLUNK_USER", "admin")
-        self.splunk_pass = os.getenv("SPLUNK_PASS", "").strip("'\"")  # Strip quotes/whitespace
+    @property
+    def debug(self):
+        return self._debug
 
-        # API Keys (e.g., for Logic Agent)
-        self.grok_api_key = os.getenv('GROK_API_KEY', '')
+    @property
+    def grok_api_key(self):
+        return self._config.get("grok_api_key", os.getenv("GROK_API_KEY", ""))
 
-        # Debug mode
-        self.debug = os.getenv('DEBUG', 'False').lower() == 'true'
+    @property
+    def api_timeout_secs(self):
+        return self._config.get("api_timeout_secs", os.getenv("API_TIMEOUT_SECS", 30))
 
-        # Timeouts (in seconds)
-        self.api_timeout_secs = 60  # For API calls like Splunk searches
+    @property
+    def atomic_red_team_path(self):
+        return self._config.get("atomic_red_team_path", os.getenv("ATOMIC_RED_TEAM_PATH", "/path/to/atomic-red-team"))
 
-        # Validate config
-        self.validate_config()
+    @property
+    def splunk_host(self):
+        return self._config.get("splunk_host", os.getenv("SPLUNK_HOST", "[splunkhost]"))
 
-    def validate_config(self):
-        if not self.grok_api_key:
-            logging.warning("GROK_API_KEY not set; using mocks for LLM calls")
-        if not all([self.splunk_pass, self.splunk_host, self.splunk_user, self.splunk_port]):
-            logging.error("Splunk credentials incomplete; connection will fail—check .env for SPLUNK_HOST, SPLUNK_PORT, SPLUNK_USER, SPLUNK_PASS")
-        else:
-            logging.debug(f"Splunk config loaded: host={self.splunk_host}, port={self.splunk_port}, user={self.splunk_user}")
+    @property
+    def splunk_port(self):
+        return self._config.get("splunk_port", os.getenv("SPLUNK_PORT", 8089))
+
+    @property
+    def splunk_user(self):
+        return self._config.get("splunk_user", os.getenv("SPLUNK_USER", "admin"))
+
+    @property
+    def splunk_pass(self):
+        return self._config.get("splunk_pass", os.getenv("SPLUNK_PASS", "your_password"))
+
+    @property
+    def elastic_url(self):
+        return self._config.get("elastic_url", os.getenv("ELASTIC_URL", "http://[elasticip]:9200"))
+
+    @property
+    def elastic_user(self):
+        return self._config.get("elastic_user", os.getenv("ELASTIC_USER", "elastic"))
+
+    @property
+    def elastic_pass(self):
+        return self._config.get("elastic_pass", os.getenv("ELASTIC_PASS", "your_password"))
+
+    @property
+    def siem_platform(self):
+        return self._config.get("siem_platform", os.getenv("SIEM_PLATFORM", "splunk"))
+
+    @property
+    def index_names(self):
+        return self._config.get("index_names", {"elasticsearch": "sysmon-*", "splunk": "linux:process"})
+
+    @property
+    def field_mappings(self):
+        return self._config.get("field_mappings", {"process.name": "process.name", "command_line": "command_line"})
+
+    @property
+    def pipeline_context(self):
+        return self._config.get("pipeline_context", {"ci_cd": "GitHub Actions runner", "runner_details": "self-hosted on Ubuntu VM"})
