@@ -70,11 +70,12 @@ Create a `config.json` file in the project root with the following structure:
 "elastic_pass": "your_password",
 "siem_platform": "splunk"  // or "elasticsearch"
 }
+```
 
-Current build sumases you're running the pipeline on the same linux host as you've installed Atomic Red Team.  See TODO.
-Grok API Key: Required for Logic and Variant Agents. Obtain from xAI Developer Portal.
-SIEM Credentials: Update for your Splunk or Elasticsearch setup.
-Debug Mode: Enables verbose logging and interactive prompts (e.g., "Proceed? [y/n]").
+--Current build assumes you're running the pipeline on the same linux host as you've installed Atomic Red Team.  See TODO.
+--Grok API Key: Required for Logic and Variant Agents. Obtain from xAI Developer Portal.
+--SIEM Credentials: Update for your Splunk or Elasticsearch setup.
+--Debug Mode: Enables verbose logging and interactive prompts (e.g., "Proceed? [y/n]").
 
 ## Usage
 Run the pipeline via client.py with optional flags. The default rule path is rules/rule.yml (relative to repo root).
@@ -92,13 +93,13 @@ Flags
 Examples:
 
 Parse and validate a rule:
-textpython client.py rules/my_rule.yml --parse-only
+```textpython client.py rules/my_rule.yml --parse-only```
 
 Full pipeline on a custom rule:
-textpython client.py rules/my_rule.yml --full
+```textpython client.py rules/my_rule.yml --full```
 
 Logic conversion only:
-textpython client.py --logic
+```textpython client.py --logic```
 
 
 Output
@@ -106,7 +107,7 @@ Output
 Results are logged to console (and validation_output.txt in debug mode).
 Includes parsed rule details, agent results, ART test outcomes, SIEM query hits, and timings.
 Example log snippet:
-textMCP Pipeline Results:
+```textMCP Pipeline Results:
 Title: My Sigma Rule
 MITRE Technique: T1059
 Detection: {...}
@@ -115,21 +116,21 @@ Variant Agent Result: {...}
 Atomic Red Team Result: {...}
 Elastic Stack Result: {...}
 Timings: {'parsing': '0.123s', 'total': '5.678s'}
+```
 
-
-Running in CI (e.g., GitHub Actions)
+### Running in CI (e.g., GitHub Actions)
 
 Set GITHUB_ACTIONS env var: Logs redirect to validation_output.txt.
 Agents use mock responses to avoid live API calls.
 No interactive prompts.
 
-Debug Mode
+### Debug Mode
 
 Enable in config.json ("debug": true).
 Adds verbose logs, raw API responses, and interactive confirmation prompts.
 Logs to validation_output.txt for auditing.
 
-Project Structure
+### Project Structure
 
 client.py: Main CLI entrypoint and pipeline orchestrator.
 sigma_parser.py: Parses and validates Sigma rules.
@@ -142,7 +143,7 @@ config.py: Loads configuration (assumed; not provided in query but implied).
 rules/: Directory for Sigma rule YAML files (e.g., rule.yml).
 Attached Documents: Example PDFs/DOCs (e.g., IoT security paper, SANS white paper template) for reference or testing attachments.
 
-Limitations and Warnings
+### Limitations and Warnings
 
 Security Risks: ART tests simulate attacks—run in isolated environments only.
 API Dependencies: Requires Grok API access; mock responses used on failure.
@@ -151,12 +152,15 @@ Timeouts: ART tests have a 30s timeout; may need adjustment for complex techniqu
 Elevation: Some ART tests require sudo; detected automatically from YAML.
 Mock Data: Used in CI or errors; based on T1059 example.
 
-Contributing
+### Contributing
 Contributions welcome! Fork the repo, create a branch, and submit a PR. Focus on:
 
-Adding support for more SIEMs.
-Enhancing prompt engineering for agents.
-Improving error handling and tests.
+1) Adding support for more SIEMs.
+2) Enhancing prompt engineering for agents.
+3) Improving error handling and tests.
+
+### TODO
+1) unscrew many things
 
 License
 MIT License. See LICENSE for details.
