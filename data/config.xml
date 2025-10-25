@@ -1,0 +1,50 @@
+<Sysmon schemaversion="4.81">
+  <!-- Hashing algorithms for event logging -->
+  <HashAlgorithms>MD5,SHA1,SHA256,IMPHASH</HashAlgorithms>
+
+  <!-- Event filtering rules -->
+  <EventFiltering>
+    <!-- Process Create: Combine include and exclude rules -->
+    <ProcessCreate onmatch="include">
+      <Image condition="contains">systemd</Image>
+      <CommandLine condition="contains">/etc/init.d/</CommandLine>
+    </ProcessCreate>
+    <ProcessCreate onmatch="exclude">
+      <Image condition="contains">/usr/bin/dpkg</Image>
+      <Image condition="contains">/usr/bin/apt</Image>
+      <Image condition="contains">/usr/sbin/cron</Image>
+      <Image condition="contains">/usr/bin/dbus-daemon</Image>
+      <Image condition="contains">/usr/sbin/rsyslogd</Image>
+      <Image condition="contains">/usr/bin/snapd</Image>
+    </ProcessCreate>
+
+    <!-- Process Terminate: Combine include and exclude rules -->
+    <ProcessTerminate onmatch="include">
+      <Image condition="contains">systemd</Image>
+    </ProcessTerminate>
+    <ProcessTerminate onmatch="exclude">
+      <Image condition="contains">/usr/bin/dbus-daemon</Image>
+      <Image condition="contains">/usr/sbin/rsyslogd</Image>
+    </ProcessTerminate>
+
+    <!-- Network Connect: Exclude local/loopback traffic and common system ports -->
+    <NetworkConnect onmatch="exclude">
+      <DestinationIp condition="contains">127.0.0.1</DestinationIp>
+      <DestinationIp condition="contains">::1</DestinationIp>
+      <DestinationPort>53</DestinationPort> <!-- DNS -->
+      <DestinationPort>123</DestinationPort> <!-- NTP -->
+      <DestinationPort>8220</DestinationPort> <!-- fleet server -->
+    </NetworkConnect>
+
+    <!-- File Create: Combine include and exclude rules -->
+    <FileCreate onmatch="include">
+      <TargetFilename condition="end with">.service</TargetFilename>
+      <TargetFilename condition="contains">/etc/systemd/</TargetFilename>
+    </FileCreate>
+    <FileCreate onmatch="exclude">
+      <TargetFilename condition="contains">/tmp/</TargetFilename>
+      <TargetFilename condition="contains">/var/log/</TargetFilename>
+      <TargetFilename condition="contains">/run/</TargetFilename>
+    </FileCreate>
+  </EventFiltering>
+</Sysmon>

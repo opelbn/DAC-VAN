@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dacvan"
+version = "0.1.0"
+description = "A tool for Detection-As-Code Validation, Automation, and Notation using Sigma rules and MITRE ATT&CK techniques."
+authors = [{name = "Ben", email = "ben@example.com"}]
+license = {file = "LICENSE"}
+dependencies = [
+    "requests",
+    "splunklib",
+    "elasticsearch",
+    "pyyaml",
+    "distro",
+    "pytest",
+    "pytest-mock",
+    "pytest-asyncio"
+]
+requires-python = ">=3.8"
+
+[project.urls]
+Repository = "https://github.com/opelbn/DAC-VAN"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

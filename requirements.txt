@@ -1,0 +1,16 @@
+requests==2.32.3
+pyyaml==6.0.2
+paramiko==3.5.0
+pytest==8.3.3
+pandas==2.2.3
+matplotlib==3.9.2
+pySigma==0.11.23
+atomic-operator
+attrs
+elasticsearch
+dotenv
+distro
+pytest
+pytest-mock
+splunk-sdk
+pytest-asyncio
