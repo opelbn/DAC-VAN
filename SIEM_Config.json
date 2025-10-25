@@ -1,0 +1,15 @@
+{
+  "siem_platform": "elasticsearch",
+  "index_names": {
+    "elasticsearch": "sysmon-*",
+    "splunk": "linux:process"
+  },
+  "field_mappings": {
+    "process.name": "process.name",
+    "command_line": "command_line"
+  },
+  "pipeline_context": {
+    "ci_cd": "GitHub Actions runner",
+    "runner_details": "self-hosted on Ubuntu VM"
+  }
+}
